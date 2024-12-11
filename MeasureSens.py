@@ -23,22 +23,31 @@ class MeasureSens:
         self.buff = [[0] * 6] * self.RING_BUFFER_SIZE
         self.buff[0] = [0, 0, 0, 0, 0, 0] # tm, x, y, z, tacc, ruck
         self.dsp_mtx = np.zeros((8,8),dtype='i,i,i') 
-        print("prt-1", self.dsp_mtx)
+        #print("prt-1", self.dsp_mtx)
         self.idx=0
     
     def measure_acceleration(self):
         next_idx = (self.idx + 1) % self.RING_BUFFER_SIZE # new position in buffer
         acceleration = self.sense.get_accelerometer_raw()
-        x = acceleration['x']
-        y = acceleration['y']
-        z = acceleration['z']
-        tacc = math.sqrt(x**2 + y**2 + z**2)
+        x_acc = acceleration['x']
+        y_acc = acceleration['y']
+        z_acc = acceleration['z']
+        tacc = math.sqrt(x_acc**2 + y_acc**2 + z_acc**2)
         ruck = abs(tacc - self.buff[self.idx][self.IDX_TACC])
+        orientation = self.sense.get_orientation()
+        pitch = orientation['pitch']
+        roll = orientation['roll']
+        yaw = orientation['yaw']
+        magn = self.sense.get_compass_raw()
+        x_mag = magn['x']
+        y_mag = magn['y']
+        z_mag = magn['z']
         tm = time.time()
         if (ruck > self.DELTA_RUCK_CHANGE):
           self.idx = next_idx
-          self.buff[self.idx] = [tm, x, y, z, tacc, ruck]
-          print("prt-2", "tm {0}   x {1}  y {2}  z {3}  acc {4} delta {5}".format(tm, x, y, z, tacc, ruck))
+          self.buff[self.idx] = [tm, x_acc, y_acc, z_acc, tacc, ruck]
+          print("tm {0}   x {1}  y {2}  z {3}  acc {4} delta {5}".format(tm, x_acc, y_acc, z_acc, tacc, ruck))
+          print("        x {0}  y {1}  z {2}  pitch {3}  roll {4}  yaw {5}".format(x_mag, y_mag, z_mag, pitch, roll, yaw))
           self.display_matrix()
 
     def display_matrix(self):
@@ -71,15 +80,15 @@ class MeasureSens:
         #print("prt-10", x, acc, norm_acc, self.ACC_DIV)
         if (norm_acc > 7):
             self.ACC_DIV = int((abs((acc * 10) - self.G_CONST) * 100) // 7)
-            print("prt-10 new", self.ACC_DIV)
+            #print("prt-10 new", self.ACC_DIV)
             return self.set_color(x, acc, ruck)
         norm_ruck = int((ruck * 100) // self.RUCK_DIV)
         #print("prt-11", x, ruck, norm_ruck, self.RUCK_DIV)
         if (norm_ruck > 255):
             self.RUCK_DIV = int((ruck * 100) // 255)
-            print("prt-11 new", self.RUCK_DIV)
+            #print("prt-11 new", self.RUCK_DIV)
             return self.set_color(x, acc, ruck)
-        print("prt-12", norm_acc, norm_ruck, self.ACC_DIV, self.RUCK_DIV)
+        #print("prt-12", norm_acc, norm_ruck, self.ACC_DIV, self.RUCK_DIV)
         if (x < norm_acc):
             return (20, norm_ruck, norm_acc * 30)
         else:

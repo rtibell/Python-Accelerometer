@@ -6,7 +6,6 @@ https://sense-hat.readthedocs.io/en/latest/
 https://projects.raspberrypi.org/en/projects/getting-started-with-the-sense-hat/0
 https://www.raspberrypi.com/documentation/accessories/sense-hat.html
 
-
 ## Raspberry linux related docs
 https://docs.kernel.org/admin-guide/kernel-parameters.html
 
